@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const db = require('../db');
-const upload = require('../middleware/multer');
+const upload = require('../Middleware/multer');
 
 exports.register = async (req, res) => {
   const { username, email, password, phone } = req.body;
@@ -15,10 +15,21 @@ exports.register = async (req, res) => {
     const role = "client";
 
     const sql = 'INSERT INTO users (username, email, password, role, phone, image) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [username, email, hashedPassword, role, phone, image], (err) => {
-      if (err) return res.status(500).json({ message: 'Database error', error: err });
-      res.status(201).json({ message: 'Account created!' });
-    });
+   db.query(sql, [username, email, hashedPassword, role, phone, image], (err, result) => {
+  if (err) return res.status(500).json({ message: 'Database error', error: err });
+  const newUser = {
+    id: result.insertId,
+    username,
+    email,
+    role,
+    phone,
+    image  
+  };
+  res.status(201).json({
+    message: 'Account created!',
+    user: newUser
+  });
+});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -36,11 +47,11 @@ exports.login = (req, res) => {
     if (!match) return res.status(401).json({ success: false, message: 'Incorrect password' });
 
     res.json({
-      success: true,
-      id: user.id,
-      username: user.username,
-      image: user.image,
-      role: user.role
+       id: user.id,
+        username: user.username,
+        email: user.email,
+        image: user.image,
+        role: user.role
     });
   });
 };

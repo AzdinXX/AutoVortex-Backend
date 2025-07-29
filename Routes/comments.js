@@ -2,7 +2,6 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 
-// add comment
 router.post('/api/comments', (req, res) => {
   const { user_id, comment, rating } = req.body;
   const sql = 'INSERT INTO comments (user_id, comment, rating) VALUES (?, ?, ?)';
@@ -12,7 +11,6 @@ router.post('/api/comments', (req, res) => {
   });
 });
 
-// grt comments
 router.get('/api/comments', (req, res) => {
   const sql = `
     SELECT c.id, c.comment, c.rating, c.created_at, u.username
@@ -26,7 +24,6 @@ router.get('/api/comments', (req, res) => {
   });
 });
 
-//delete comment
 router.delete('/api/comments/:id', (req, res) => {
   const { id } = req.params;
   const sql = 'DELETE FROM comments WHERE id = ?';
