@@ -6,6 +6,7 @@ const db = require("./db");
 const cors = require("cors");
 const path = require('path');
 const fs = require('fs');
+const offersRoutes = require('./Routes/offers');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -29,7 +30,9 @@ app.use(require('./Routes/rentals'));
 app.use(require('./Routes/notifications'));
 app.use(require('./Routes/users'));
 app.use(require('./Routes/comments'));
-app.use(require('./Routes/admin'));
+app.use(require('./Routes/offers'));
+// app.use(require('./Routes/admin'));
+app.use("/offers", offersRoutes);
 
 
 // Server start
