@@ -42,24 +42,25 @@ router.get('/',  (req, res) => {
 });
 
 // Get offer by ID
-router.get('/api/offers/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [offers] = await db.query('SELECT * FROM offers WHERE id = ?', [id]);
+router.get('/:id', (req, res) => {
+  const { id } = req.params;
+  
+  db.query('SELECT * FROM offers WHERE id = ?', [id], (err, offers) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Failed to fetch offer' });
+    }
     
     if (offers.length === 0) {
       return res.status(404).json({ message: 'Offer not found' });
     }
     
     res.json(offers[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to fetch offer' });
-  }
+  });
 });
 
 // Add new offer
-router.post('/api/offers', (req, res) => {
+router.post('/', (req, res) => {
   upload(req, res, function (err) {
     if (err) {
       console.error('Upload error:', err);
@@ -126,7 +127,7 @@ router.post('/api/offers', (req, res) => {
 });
 
 // Update offer
-router.put('/api/offers/:id', (req, res) => {
+router.put('/:id', (req, res) => {
   upload(req, res, function (err) {
     if (err) {
       console.error('Upload error:', err);
@@ -199,33 +200,38 @@ router.put('/api/offers/:id', (req, res) => {
 });
 
 // Delete offer
-router.delete('/api/offers/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // First get the offer to check if it has an image
-    const [offers] = await db.query('SELECT image_url FROM offers WHERE id = ?', [id]);
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  
+  // First get the offer to check if it has an image
+  db.query('SELECT image_url FROM offers WHERE id = ?', [id], (err, offers) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database error" });
+    }
     
     if (offers.length === 0) {
       return res.status(404).json({ message: "Offer not found" });
     }
 
     // Delete the offer
-    await db.query('DELETE FROM offers WHERE id = ?', [id]);
-    
-    // TODO: Delete the image file from uploads folder if it exists
-    // const fs = require('fs');
-    // if (offers[0].image_url) {
-    //   fs.unlink(`uploads/${offers[0].image_url}`, (err) => {
-    //     if (err) console.error('Error deleting image file:', err);
-    //   });
-    // }
-    
-    res.json({ message: 'Offer deleted successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Delete failed" });
-  }
+    db.query('DELETE FROM offers WHERE id = ?', [id], (deleteErr, result) => {
+      if (deleteErr) {
+        console.error(deleteErr);
+        return res.status(500).json({ message: "Delete failed" });
+      }
+      
+      // TODO: Delete the image file from uploads folder if it exists
+      // const fs = require('fs');
+      // if (offers[0].image_url) {
+      //   fs.unlink(`uploads/${offers[0].image_url}`, (err) => {
+      //     if (err) console.error('Error deleting image file:', err);
+      //   });
+      // }
+      
+      res.json({ message: 'Offer deleted successfully' });
+    });
+  });
 });
 
 module.exports = router;
